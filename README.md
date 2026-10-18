@@ -44,20 +44,6 @@ TripWise is a full-stack travel planning web application that allows users to di
 ## Database Configuration
 The application uses SQLite (`tripwise.db`). Tables are initialized automatically upon application startup.
 
-### Relational Schema
-+---------------------------------+       +-----------------------------------------+
-|             users               |       |                itinerary                |
-+---------------------------------+       +-----------------------------------------+
-| id       | INTEGER (PK, AUTO)   | <----+| id          | INTEGER (PK, AUTO)          |
-| username | TEXT (UNIQUE, NOT NULL)|       | user_id     | INTEGER (FK -> users.id)  |
-| password | TEXT (NOT NULL)      |       | name        | TEXT (NOT NULL)             |
-+---------------------------------+       | location    | TEXT (NOT NULL)             |
-| description | TEXT                      |
-| category    | TEXT                      |
-| travel_date | TEXT                      |
-+-----------------------------------------+
-
-
 ---
 
 ## API Endpoints Documentation
@@ -105,25 +91,25 @@ The application uses SQLite (`tripwise.db`). Tables are initialized automaticall
    cd tripwise
    Install Dependencies
 
-Bash
+2. Bash
 pip install -r requirements.txt
 Set the Gemini API Key
 
-Windows (Command Prompt):
+3. Windows (Command Prompt):
 
-DOS
+-DOS
 set GEMINI_API_KEY=your_gemini_api_key_here
 Windows (PowerShell):
 
-PowerShell
+-PowerShell
 $env:GEMINI_API_KEY="your_gemini_api_key_here"
 Linux / macOS:
 
-Bash
+-Bash
 export GEMINI_API_KEY="your_gemini_api_key_here"
 Run the Application
 
-Bash
+-Bash
 python app.py
 Access in Browser
 Open http://127.0.0.1:5000
