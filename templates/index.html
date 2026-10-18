@@ -5,17 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trip Wise - Smart Travel Planner</title>
     
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Leaflet Map CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
+    
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-
+    <!-- Marked.js for parsing AI Markdown -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <style>
-
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -24,73 +26,78 @@
         .tab-active { border-bottom: 2px solid #2563eb; color: #2563eb; font-weight: bold; }
         .hidden { display: none !important; }
         
-
-        #map { height: 400px; width: 100%; z-index: 10; border-radius: 0.5rem; }
+        #map { height: 350px; width: 100%; z-index: 10; border-radius: 0.5rem; }
+        @media (min-width: 768px) { #map { height: 400px; } }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
 
-   
-    <div id="toast-container" class="fixed top-4 left-1/2 transform -translate-x-1/2 z-[9999] w-full max-w-md hidden transition-all duration-300">
+    <!-- Toast Notification Banner -->
+    <div id="toast-container" class="fixed top-4 left-1/2 transform -translate-x-1/2 z-[9999] w-11/12 max-w-md hidden transition-all duration-300">
         <div id="toast-message" class="text-white px-6 py-3 rounded shadow-lg text-center font-medium"></div>
     </div>
 
+    <!-- Navbar -->
     <nav class="bg-white shadow-sm sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <i class="fa-solid fa-plane-departure text-blue-600 text-2xl mr-2"></i>
-                    <span class="font-bold text-xl tracking-tight text-gray-900">Trip Wise</span>
+                    <i class="fa-solid fa-plane-departure text-blue-600 text-xl sm:text-2xl mr-2"></i>
+                    <span class="font-bold text-lg sm:text-xl tracking-tight text-gray-900 hidden xs:block">Trip Wise</span>
                 </div>
-                <div class="flex items-center space-x-6">
-                    <button id="tab-explore" class="tab-active px-1 py-5 text-sm transition-colors" onclick="switchTab('explore')">Explore</button>
-                    <button id="tab-trip" class="text-gray-500 hover:text-gray-700 px-1 py-5 text-sm transition-colors" onclick="switchTab('trip')">My Trip</button>
+                <div class="flex items-center space-x-2 sm:space-x-6">
+                    <button id="tab-explore" class="tab-active px-1 py-5 text-xs sm:text-sm transition-colors" onclick="switchTab('explore')">Explore</button>
+                    <button id="tab-trip" class="text-gray-500 hover:text-gray-700 px-1 py-5 text-xs sm:text-sm transition-colors" onclick="switchTab('trip')">My Trip</button>
                     
                     <!-- Auth Controls -->
-                    <div id="auth-section" class="ml-4 border-l pl-4 flex items-center">
-                        <span id="user-greeting" class="text-sm font-medium mr-4 hidden text-blue-800"></span>
-                        <button id="btn-login" onclick="openAuthModal()" class="text-sm text-gray-600 hover:text-blue-600 font-medium">Sign In <i class="fa-solid fa-arrow-right-to-bracket ml-1"></i></button>
-                        <button id="btn-logout" onclick="logout()" class="hidden text-sm text-red-500 hover:text-red-700 font-medium">Sign Out</button>
+                    <div id="auth-section" class="ml-1 sm:ml-4 border-l pl-2 sm:pl-4 flex items-center">
+                        <span id="user-greeting" class="text-sm font-medium mr-4 hidden sm:block text-blue-800"></span>
+                        <button id="btn-login" onclick="openAuthModal()" class="text-xs sm:text-sm text-gray-600 hover:text-blue-600 font-medium">Sign In <i class="fa-solid fa-arrow-right-to-bracket ml-1"></i></button>
+                        <button id="btn-logout" onclick="logout()" class="hidden text-xs sm:text-sm text-red-500 hover:text-red-700 font-medium">Sign Out</button>
                     </div>
                 </div>
             </div>
         </div>
     </nav>
 
-    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+    <!-- Main Content Area -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
         
-
+        <!-- EXPLORE TAB -->
         <section id="explore-section">
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
-                <h1 class="text-2xl font-bold mb-4 text-gray-900">Where to next?</h1>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 sm:p-6 mb-8">
+                <h1 class="text-xl sm:text-2xl font-bold mb-4 text-gray-900">Where to next?</h1>
                 
-                <div class="flex flex-col md:flex-row gap-4">
+                <div class="flex flex-col md:flex-row gap-3">
                     <div class="relative flex-grow">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
                         </div>
-                        <input type="text" id="search-input" placeholder="Search for a city (e.g., London, Tokyo)..." 
+                        <input type="text" id="search-input" placeholder="Search city (e.g., London)..." 
                             class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                             onkeypress="if(event.key === 'Enter') handleSearch()">
                     </div>
                     
-                    <select id="sort-select" class="block w-full md:w-40 pl-3 pr-10 py-3 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                        <option value="default">Sort: Default</option>
-                        <option value="name_asc">Name (A-Z)</option>
-                        <option value="name_desc">Name (Z-A)</option>
-                    </select>
+                    <!-- Grouped Select & Map Button for Mobile -->
+                    <div class="flex gap-2">
+                        <select id="sort-select" class="flex-grow md:w-40 pl-3 pr-8 py-3 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <option value="default">Sort: Default</option>
+                            <option value="name_asc">Name (A-Z)</option>
+                            <option value="name_desc">Name (Z-A)</option>
+                        </select>
 
-                    <button onclick="toggleMap()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-lg border border-gray-300 transition-colors" title="Toggle Map View">
-                        <i class="fa-solid fa-map-location-dot"></i>
-                    </button>
+                        <button onclick="toggleMap()" class="shrink-0 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-lg border border-gray-300 transition-colors" title="Toggle Map View">
+                            <i class="fa-solid fa-map-location-dot"></i>
+                        </button>
+                    </div>
                     
-                    <button onclick="handleSearch()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors shadow-sm">
+                    <button onclick="handleSearch()" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors shadow-sm">
                         Search
                     </button>
                 </div>
             </div>
 
-          
+            <!-- Interactive Map Container -->
             <div id="map-container" class="mb-8 hidden shadow-sm border border-gray-200 rounded-xl overflow-hidden relative">
                 <div id="map-loading" class="absolute inset-0 bg-white/70 z-[20] hidden flex flex-col items-center justify-center">
                     <i class="fa-solid fa-spinner fa-spin text-3xl text-blue-600 mb-2"></i>
@@ -102,56 +109,57 @@
                 </div>
             </div>
 
-    
-            <div id="loading-state" class="hidden flex flex-col items-center justify-center py-20">
+            <!-- Search Loading State -->
+            <div id="loading-state" class="hidden flex flex-col items-center justify-center py-16">
                 <i class="fa-solid fa-circle-notch fa-spin text-4xl text-blue-600 mb-4"></i>
                 <p class="text-gray-500 text-lg">Finding amazing places...</p>
             </div>
 
- 
-            <div id="empty-state" class="hidden flex flex-col items-center justify-center py-20 text-center">
+            <!-- Empty State -->
+            <div id="empty-state" class="hidden flex flex-col items-center justify-center py-16 text-center">
                 <div class="bg-gray-100 p-6 rounded-full mb-4">
                     <i class="fa-solid fa-map text-4xl text-gray-400"></i>
                 </div>
                 <h3 class="text-xl font-medium text-gray-900 mb-2">No places found</h3>
-                <p class="text-gray-500 max-w-md">Try searching for a different city or click the map button to explore interactively.</p>
+                <p class="text-gray-500 max-w-sm px-4">Try searching for a different city or click the map button to explore interactively.</p>
             </div>
 
-            <div id="results-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            
+            <!-- Results Grid -->
+            <div id="results-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Cards injected here via JS -->
             </div>
         </section>
 
-
+        <!-- MY TRIP TAB -->
         <section id="trip-section" class="hidden">
-            <div class="flex justify-between items-center mb-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <h1 class="text-2xl font-bold text-gray-900">My Itinerary</h1>
-                <div class="flex gap-2 items-center">
-                    <select id="budget-select" class="border-gray-300 rounded shadow-sm text-sm p-2 border">
-                        <option value="budget">Budget Friendly</option>
+                <div class="flex gap-2 items-center w-full sm:w-auto">
+                    <select id="budget-select" class="flex-grow sm:flex-grow-0 border-gray-300 rounded shadow-sm text-sm p-2.5 border">
+                        <option value="budget">Budget</option>
                         <option value="moderate" selected>Moderate</option>
                         <option value="luxury">Luxury</option>
                     </select>
-                    <button onclick="generateAIPlan()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded shadow transition-colors flex items-center">
-                        <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Auto-Plan Trip
+                    <button onclick="generateAIPlan()" class="shrink-0 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 rounded shadow transition-colors flex items-center">
+                        <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Auto-Plan
                     </button>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-           
+                <!-- Left: Saved Places List -->
                 <div class="lg:col-span-1">
-                    <div id="itinerary-container" class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 min-h-[400px]">
-            
+                    <div id="itinerary-container" class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 min-h-[300px]">
+                        <!-- Itinerary items injected here -->
                     </div>
                 </div>
 
-
+                <!-- Right: AI Generated Plan -->
                 <div class="lg:col-span-2">
-                    <div id="ai-plan-container" class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 min-h-[400px] prose max-w-none">
-                        <div class="text-center text-gray-400 mt-20">
+                    <div id="ai-plan-container" class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 sm:p-6 min-h-[300px] prose prose-sm sm:prose max-w-none">
+                        <div class="text-center text-gray-400 mt-16 px-4">
                             <i class="fa-solid fa-robot text-4xl mb-4"></i>
-                            <p>Click "Auto-Plan Trip" and AI will generate a day-by-day guide based on your saved places!</p>
+                            <p>Click "Auto-Plan" and AI will generate a day-by-day guide based on your saved places!</p>
                         </div>
                     </div>
                 </div>
@@ -160,20 +168,20 @@
 
     </main>
 
-    <div id="details-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto relative">
+    <!-- Destination Details Modal -->
+    <div id="details-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-3 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[95vh] overflow-y-auto relative">
             
             <button onclick="closeModal()" class="absolute top-4 right-4 h-8 w-8 bg-black/50 hover:bg-black text-white rounded-full flex items-center justify-center transition-colors z-10">
                 <i class="fa-solid fa-xmark"></i>
             </button>
             
-   
-            <div id="modal-image-container" class="h-48 w-full bg-slate-700 flex items-center justify-center text-white relative">
-                <h2 id="modal-title-overlay" class="text-4xl font-bold z-10 text-center px-4">Title</h2>
+            <div id="modal-image-container" class="h-40 sm:h-48 w-full bg-slate-700 flex items-center justify-center text-white relative">
+                <h2 id="modal-title-overlay" class="text-2xl sm:text-4xl font-bold z-10 text-center px-4">Title</h2>
             </div>
             
-            <div class="p-6">
-                <div class="flex justify-between items-start mb-4">
+            <div class="p-5 sm:p-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start mb-4 gap-3">
                     <div>
                         <span id="modal-category" class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-semibold uppercase tracking-wider mb-2">Category</span>
                         <h2 id="modal-title" class="text-xl font-bold text-gray-900 hidden">Title</h2>
@@ -181,26 +189,26 @@
                             <i class="fa-solid fa-location-dot mr-2"></i> <span id="modal-loc-text">Location</span>
                         </p>
                     </div>
-               
-                    <div id="modal-weather" class="bg-sky-50 text-sky-700 px-3 py-2 rounded-lg text-center shadow-sm border border-sky-100 hidden">
-                        <div class="text-xs font-semibold uppercase">Live Weather</div>
-                        <div id="modal-temp" class="text-xl font-bold">--°C</div>
+                    <!-- Live Weather Badge -->
+                    <div id="modal-weather" class="w-full sm:w-auto bg-sky-50 text-sky-700 px-3 py-2 rounded-lg text-center shadow-sm border border-sky-100 hidden">
+                        <div class="text-[10px] sm:text-xs font-semibold uppercase">Live Weather</div>
+                        <div id="modal-temp" class="text-lg sm:text-xl font-bold">--°C</div>
                     </div>
                 </div>
                 
-                <p id="modal-description" class="text-gray-700 mb-6 leading-relaxed">Description goes here...</p>
+                <p id="modal-description" class="text-gray-700 mb-6 text-sm sm:text-base leading-relaxed">Description goes here...</p>
                 
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-gray-700 mb-2">When do you want to go?</label>
                     <input type="date" id="modal-date" class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 
-                <div class="flex space-x-3">
-                    <button id="modal-add-btn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded font-medium transition-colors flex justify-center items-center">
+                <!-- Buttons stack on mobile, sit side-by-side on desktop -->
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <button id="modal-add-btn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-4 rounded font-medium transition-colors flex justify-center items-center">
                         <i class="fa-solid fa-plus mr-2"></i> Add to Itinerary
                     </button>
-                   
-                    <a id="modal-book-btn" href="#" target="_blank" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-2 px-4 rounded font-medium transition-colors flex justify-center items-center">
+                    <a id="modal-book-btn" href="#" target="_blank" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-2.5 px-4 rounded font-medium transition-colors flex justify-center items-center">
                         <i class="fa-solid fa-ticket mr-2"></i> Book Flights
                     </a>
                 </div>
@@ -208,6 +216,7 @@
         </div>
     </div>
 
+    <!-- Auth Modal -->
     <div id="auth-modal" class="fixed inset-0 bg-black/60 z-[60] hidden flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 relative">
             <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700">
@@ -238,6 +247,7 @@
         </div>
     </div>
 
+    <!-- Scripts -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         let currentPlaces = [];
@@ -247,13 +257,11 @@
         let isLoginMode = true;
         let currentUser = null;
 
-        // Initialize App
         document.addEventListener('DOMContentLoaded', () => {
             checkAuth();
             fetchItinerary();
         });
 
-        // --- AUTHENTICATION LOGIC ---
         async function checkAuth() {
             try {
                 const res = await fetch('/api/me');
@@ -306,7 +314,6 @@
                     checkAuth();
                     fetchItinerary();
                 } else {
-                    // Auto-switch to signup if account not found
                     if (isLoginMode && res.status === 404) {
                         showBanner('Account not found. Switching to Sign Up!', 'error');
                         toggleAuthMode();
@@ -325,7 +332,7 @@
             document.getElementById('user-greeting').classList.add('hidden');
             document.getElementById('btn-logout').classList.add('hidden');
             document.getElementById('btn-login').classList.remove('hidden');
-
+            
             document.getElementById('itinerary-container').innerHTML = '';
             showBanner('Signed out successfully', 'success');
             
@@ -367,7 +374,7 @@
             msgEl.className = `text-white px-6 py-3 rounded shadow-lg text-center font-medium ${type === 'error' ? 'bg-red-600' : 'bg-green-600'}`;
             
             container.classList.remove('hidden');
-            container.classList.add('animate-bounce'); 
+            container.classList.add('animate-bounce');
             
             setTimeout(() => {
                 container.classList.add('hidden');
@@ -379,10 +386,9 @@
             if (!map) {
                 map = L.map('map').setView([lat, lng], zoom);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '© OpenStreetMap contributors'
+                    attribution: '© OSM'
                 }).addTo(map);
 
-           
                 map.on('click', async function(e) {
                     const clat = e.latlng.lat;
                     const clng = e.latlng.lng;
@@ -415,8 +421,8 @@
             const mapContainer = document.getElementById('map-container');
             if (mapContainer.classList.contains('hidden')) {
                 mapContainer.classList.remove('hidden');
-                initMap(); // Ensure it exists
-                setTimeout(() => map.invalidateSize(), 100);
+                initMap(); 
+                setTimeout(() => map.invalidateSize(), 100); 
                 if (currentPlaces.length > 0) {
                     renderPlaces(currentPlaces); 
                 }
@@ -425,11 +431,9 @@
             }
         }
 
-
         async function handleSearch() {
             const query = document.getElementById('search-input').value.trim();
             if (!query) return;
-
 
             document.getElementById('loading-state').classList.remove('hidden');
             document.getElementById('empty-state').classList.add('hidden');
@@ -437,13 +441,10 @@
 
             try {
                 const response = await fetch(`/api/explore?query=${encodeURIComponent(query)}`);
-                
                 if (!response.ok) throw new Error('API Request failed');
-                
                 const data = await response.json();
                 currentPlaces = data;
 
-    
                 const mapContainer = document.getElementById('map-container');
                 if (mapContainer.classList.contains('hidden')) {
                     toggleMap();
@@ -451,14 +452,12 @@
 
                 renderPlaces(currentPlaces);
             } catch (error) {
-                console.error(error);
                 document.getElementById('loading-state').classList.add('hidden');
                 document.getElementById('empty-state').classList.remove('hidden');
-                showBanner('Failed to load destinations. Check your connection.', 'error');
+                showBanner('Failed to load destinations.', 'error');
             }
         }
 
-  
         function renderPlaces(places) {
             document.getElementById('loading-state').classList.add('hidden');
             const grid = document.getElementById('results-grid');
@@ -470,19 +469,16 @@
             
             document.getElementById('empty-state').classList.add('hidden');
 
-      
             const sortVal = document.getElementById('sort-select').value;
             let sortedPlaces = [...places];
             if (sortVal === 'name_asc') sortedPlaces.sort((a, b) => a.name.localeCompare(b.name));
             if (sortVal === 'name_desc') sortedPlaces.sort((a, b) => b.name.localeCompare(a.name));
 
-        
             mapMarkers.forEach(m => map.removeLayer(m));
             mapMarkers = [];
             const latlngs = [];
 
             grid.innerHTML = sortedPlaces.map((place, index) => {
-         
                 const lat = parseFloat(place.lat);
                 const lon = parseFloat(place.lon);
                 
@@ -493,7 +489,6 @@
                     latlngs.push([lat, lon]);
                 }
 
-                // Determine color based on category
                 let color = "bg-blue-500";
                 if(place.category.toLowerCase().includes('park') || place.category.toLowerCase().includes('nature')) color = "bg-green-500";
                 if(place.category.toLowerCase().includes('museum') || place.category.toLowerCase().includes('history')) color = "bg-amber-600";
@@ -501,12 +496,12 @@
                 return `
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow cursor-pointer flex flex-col h-full" onclick="openModal(${index})">
                         <div class="h-32 w-full flex items-center justify-center text-white ${color}">
-                            <h3 class="text-2xl font-bold px-4 text-center line-clamp-2">${place.name}</h3>
+                            <h3 class="text-xl sm:text-2xl font-bold px-4 text-center line-clamp-2">${place.name}</h3>
                         </div>
-                        <div class="p-5 flex-grow flex flex-col">
-                            <span class="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-2">${place.category}</span>
+                        <div class="p-4 flex-grow flex flex-col">
+                            <span class="text-[10px] font-semibold text-blue-600 uppercase tracking-wider mb-2">${place.category}</span>
                             <h3 class="text-lg font-bold text-gray-900 mb-1">${place.name}</h3>
-                            <p class="text-gray-500 text-sm mb-3 flex-grow line-clamp-3">${place.description}</p>
+                            <p class="text-gray-500 text-xs sm:text-sm mb-3 flex-grow line-clamp-3">${place.description}</p>
                             <p class="text-xs text-gray-400 mt-auto"><i class="fa-solid fa-location-dot"></i> ${place.location}</p>
                         </div>
                     </div>
@@ -527,16 +522,14 @@
             selectedPlace = currentPlaces[index];
             if (!selectedPlace) return;
 
-
             document.getElementById('modal-title-overlay').innerText = selectedPlace.name;
             document.getElementById('modal-category').innerText = selectedPlace.category;
             document.getElementById('modal-loc-text').innerText = selectedPlace.location;
             document.getElementById('modal-description').innerText = selectedPlace.description;
-           
+            
             const searchName = encodeURIComponent(`${selectedPlace.name} ${selectedPlace.location}`);
             document.getElementById('modal-book-btn').href = `https://www.google.com/travel/search?q=${searchName}`;
 
-            // Reset UI states
             document.getElementById('modal-date').value = '';
             const weatherBadge = document.getElementById('modal-weather');
             weatherBadge.classList.add('hidden');
@@ -554,7 +547,7 @@
                             weatherBadge.classList.remove('hidden');
                         }
                     }
-                } catch (e) {  }
+                } catch (e) { }
             }
         }
 
@@ -588,13 +581,13 @@
             }
 
             container.innerHTML = items.map(item => `
-                <div class="border border-gray-200 p-4 rounded-lg shadow-sm mb-4 flex justify-between items-center bg-white hover:border-blue-300 transition-colors">
-                    <div>
-                        <h3 class="font-bold text-lg text-gray-800">${item.name}</h3>
-                        <p class="text-sm text-gray-500 flex items-center mt-1"><i class="fa-solid fa-location-dot mr-1"></i> ${item.location}</p>
-                        <p class="text-xs text-blue-600 mt-2 font-semibold bg-blue-50 inline-block px-2 py-1 rounded">Travel Date: ${item.travel_date || 'Not specified'}</p>
+                <div class="border border-gray-200 p-3 sm:p-4 rounded-lg shadow-sm mb-4 flex justify-between items-center bg-white hover:border-blue-300 transition-colors">
+                    <div class="pr-2">
+                        <h3 class="font-bold text-base sm:text-lg text-gray-800">${item.name}</h3>
+                        <p class="text-xs sm:text-sm text-gray-500 flex items-center mt-1"><i class="fa-solid fa-location-dot mr-1"></i> ${item.location}</p>
+                        <p class="text-[10px] sm:text-xs text-blue-600 mt-2 font-semibold bg-blue-50 inline-block px-2 py-1 rounded">Date: ${item.travel_date || 'Not specified'}</p>
                     </div>
-                    <button onclick="removeFromItinerary(${item.id})" class="bg-red-50 hover:bg-red-500 text-red-600 hover:text-white px-3 py-2 rounded transition-colors" title="Remove">
+                    <button onclick="removeFromItinerary(${item.id})" class="shrink-0 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white px-3 py-2 rounded transition-colors" title="Remove">
                         <i class="fa-solid fa-trash"></i>
                     </button>
                 </div>
@@ -633,7 +626,7 @@
                 if (response.ok) {
                     showBanner('Successfully added to itinerary!', 'success');
                     closeModal();
-                    fetchItinerary(); // Refreshes the My Trip list automatically
+                    fetchItinerary(); 
                 } else {
                     showBanner(`Failed to save: ${data.error}`, 'error');
                 }
@@ -653,6 +646,7 @@
                 showBanner('Failed to remove item', 'error');
             }
         }
+
         async function generateAIPlan() {
             const aiContainer = document.getElementById('ai-plan-container');
             const budget = document.getElementById('budget-select').value;
@@ -660,7 +654,7 @@
             aiContainer.innerHTML = `
                 <div class="flex flex-col items-center justify-center h-full py-10">
                     <i class="fa-solid fa-wand-magic-sparkles fa-bounce text-4xl text-purple-600 mb-4"></i>
-                    <p class="text-gray-700 font-medium">Gemini AI is crafting your ${budget} itinerary...</p>
+                    <p class="text-gray-700 font-medium text-center px-4">Gemini AI is crafting your ${budget} itinerary...</p>
                 </div>
             `;
             
