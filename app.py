@@ -270,16 +270,8 @@ def generate_plan():
     genai.configure(api_key=api_key)
     
     try:
-        # Automatically find an available model that supports text generation for your specific key
-        available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-        
-        if not available_models:
-            return jsonify({"error": "No valid text generation models found for this API key."}), 500
-            
-        # Prefer the fast 'flash' model if available, otherwise fallback to the first working model
-        chosen_model = next((m for m in available_models if 'flash' in m.lower()), available_models[0])
-        
-        model = genai.GenerativeModel(chosen_model)
+        # Explicitly using the model version requested by the API
+        model = genai.GenerativeModel('gemini-3.8-flash')
         prompt = f"I am planning a {budget} budget trip. I want to visit these places: {places_text}. Write a short, engaging day-by-day travel plan using markdown formatting. Include brief transport and food tips."
         
         response = model.generate_content(prompt)
