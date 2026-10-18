@@ -244,6 +244,7 @@ def remove_itinerary(item_id):
     conn.close()
     return jsonify({"message": "Removed successfully!"}), 200
 
+# --- 6. AI TRAVEL PLANNER ---
 @app.route('/api/generate_plan', methods=['GET'])
 def generate_plan():
     if 'user_id' not in session:
@@ -267,12 +268,23 @@ def generate_plan():
     places_text = ", ".join([f"{row[0]} in {row[1]} (Date: {row[2]})" for row in rows])
     
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-pro')
-    prompt = f"I am planning a {budget} budget trip. I want to visit these places: {places_text}. Write a short, engaging day-by-day travel plan using markdown formatting. Include brief transport and food tips."
     
     try:
+        # Automatically find an available model that supports text generation for your specific key
+        available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+        
+        if not available_models:
+            return jsonify({"error": "No valid text generation models found for this API key."}), 500
+            
+        # Prefer the fast 'flash' model if available, otherwise fallback to the first working model
+        chosen_model = next((m for m in available_models if 'flash' in m.lower()), available_models[0])
+        
+        model = genai.GenerativeModel(chosen_model)
+        prompt = f"I am planning a {budget} budget trip. I want to visit these places: {places_text}. Write a short, engaging day-by-day travel plan using markdown formatting. Include brief transport and food tips."
+        
         response = model.generate_content(prompt)
         return jsonify({"plan": response.text})
+        
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
