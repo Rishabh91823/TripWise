@@ -267,7 +267,7 @@ def generate_plan():
     places_text = ", ".join([f"{row[0]} in {row[1]} (Date: {row[2]})" for row in rows])
     
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-pro')
     prompt = f"I am planning a {budget} budget trip. I want to visit these places: {places_text}. Write a short, engaging day-by-day travel plan using markdown formatting. Include brief transport and food tips."
     
     try:
