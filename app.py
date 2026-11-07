@@ -270,7 +270,6 @@ def generate_plan():
     genai.configure(api_key=api_key)
     
     try:
-        # Explicitly using the model version requested by the API
         model = genai.GenerativeModel('gemini-3.8-flash')
         prompt = f"I am planning a {budget} budget trip. I want to visit these places: {places_text}. Write a short, engaging day-by-day travel plan using markdown formatting. Include brief transport and food tips."
         
